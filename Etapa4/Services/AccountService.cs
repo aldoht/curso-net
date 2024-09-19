@@ -1,5 +1,7 @@
+using Microsoft.EntityFrameworkCore;
 using Etapa4.Data;
 using Etapa4.Data.BankDbModels;
+using Etapa4.Data.DTOs;
 
 namespace Etapa4.Services;
 
@@ -9,25 +11,29 @@ public class AccountService {
         _context = context;
     }
 
-    public IEnumerable<Account> GetAll() {
-        return _context.Accounts.ToList();
+    public async Task<IEnumerable<Account>> GetAll() {
+        return await _context.Accounts.ToListAsync();
     }
 
-    public Account? GetById(int id) {
-        var account = _context.Accounts.Find(id);
-
-        return account;
+    public async Task<Account?> GetById(int id) {
+        return await _context.Accounts.FindAsync(id);
     }
 
-    public Account Create(Account newAccount) {
-        if (_context.Clients.Find(newAccount.ClientId) is null) return null;
+    public async Task<Account> Create(AccountDTO newAccountDTO) {
+        var newAccount = new Account();
+        newAccount.AccountType = newAccountDTO.AccountType;
+        newAccount.ClientId = newAccountDTO.ClientId;
+        newAccount.Balance = newAccountDTO.Balance;
+
+        if (await _context.Clients.FindAsync(newAccount.ClientId) is null) return null;
+
         _context.Accounts.Add(newAccount);
-        _context.SaveChanges();
+        await _context.SaveChangesAsync();
         return newAccount;
     }
 
-    public int Update(Account account) {
-        var existingAccount = GetById(account.Id);
+    public async Task<int> Update(AccountDTO account) {
+        var existingAccount = await GetById(account.Id);
         if (existingAccount is null) return -1;
 
         if (existingAccount.ClientId != account.ClientId) return 1;
@@ -35,16 +41,16 @@ public class AccountService {
         existingAccount.AccountType = account.AccountType;
         existingAccount.Balance = account.Balance;
 
-        _context.SaveChanges();
+        await _context.SaveChangesAsync();
         return 0;
     }
 
-    public void Delete(Account account) {
-        var accountToDelete = GetById(account.Id);
+    public async Task Delete(Account account) {
+        var accountToDelete = await GetById(account.Id);
 
         if (accountToDelete is null) return;
 
         _context.Accounts.Remove(accountToDelete);
-        _context.SaveChanges();
+        await _context.SaveChangesAsync();
     }
 }

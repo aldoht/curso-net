@@ -13,8 +13,10 @@ builder.Services.AddSwaggerGen();
 // BankDb Context
 builder.Services.AddSqlServer<BankDbContext>(builder.Configuration.GetConnectionString("BankDbConnection"));
 
-// Servicio
+// Servicios
 builder.Services.AddScoped<AccountService>();
+builder.Services.AddScoped<ClientService>();
+builder.Services.AddScoped<AccountTypeService>();
 
 var app = builder.Build();
 
